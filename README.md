@@ -2,9 +2,9 @@
 
 Repository: <https://github.com/o-Sakurajimamai-o/CS336-Assignment1-StudentVersion.git>
 
-This repository contains my implementation work for Stanford CS336 Assignment 1.
-The project focuses on the basic building blocks used when training language
-models from scratch.
+This repository contains my student implementation work for Stanford CS336
+Assignment 1. The project focuses on building a BPE tokenizer and core deep
+learning modules from scratch.
 
 This is a student version of the assignment code. I implemented the core pieces
 myself while following the assignment specification, with the goal of
