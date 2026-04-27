@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+data/
+*.zip
+*.pt
+*.pth
+*.npz
+*_vocab.json
+*_merges.txt

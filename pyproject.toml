@@ -1,0 +1,14 @@
+[project]
+name = "cs336-assignment1-basics"
+version = "0.1.0"
+description = "Implementation notes and code for CS336 assignment 1 basics."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "regex>=2026.3.32",
+    "torch~=2.11.0",
+    "tqdm>=4.67",
+]
+
+[tool.ruff]
+line-length = 120
