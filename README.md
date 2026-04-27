@@ -22,10 +22,8 @@ tokenization, model layers, optimization utilities, and training helpers.
 
 ```text
 cs336_basics/
-  BPE_Tokenizer.py   # BPE training and pre-tokenization utilities
-  Tokenizer.py       # BPE tokenizer implementation
-  linear.py          # Bias-free Linear module
-  embedding.py       # Embedding module
+  classes.py
+  function.py
 ```
 
 ## Dependencies
