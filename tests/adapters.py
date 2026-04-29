@@ -10,10 +10,10 @@ from jaxtyping import Bool, Float, Int
 from torch import Tensor
 
 #================================ Import ==========================================
-from cs336_basics import BPE_Tokenizer
-from cs336_basics.Tokenizer import Tokenizer
-from cs336_basics.linear import Linear
-from cs336_basics.embedding import Embedding
+import cs336_basics.Chapter2.BPE_Tokenizer as BPE_Tokenizer
+from cs336_basics.Chapter2.Tokenizer import Tokenizer
+from cs336_basics.Chapter3.embedding import Embedding
+from cs336_basics.Chapter3.linear import Linear
 #==================================================================================
 
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -98,7 +98,7 @@ def run_swiglu(
     # swiglu.w2.weight.data = w2_weight
     # swiglu.w3.weight.data = w3_weight
 
-    from cs336_basics.ffn import FFN
+    from cs336_basics.Chapter3.ffn import FFN
 
     ffn = FFN(d_model=d_model)
     ffn.w1.weight.data = w1_weight
@@ -126,7 +126,7 @@ def run_scaled_dot_product_attention(
     Returns:
         Float[Tensor, " ... queries d_v"]: Output of SDPA
     """
-    from cs336_basics.scaled_dot_product_attention import dot_product_attention
+    from cs336_basics.Chapter3.scaled_dot_product_attention import dot_product_attention
     return dot_product_attention(Q, K, V, mask)
 
 
@@ -165,7 +165,7 @@ def run_multihead_self_attention(
     device = in_features.device
     dtype = in_features.dtype
 
-    from cs336_basics.multihead_self_attention import MultiHeadSelfAttention
+    from cs336_basics.Chapter3.multihead_self_attention import MultiHeadSelfAttention
 
     Attention = MultiHeadSelfAttention(d_model, num_heads, 1024, False)
     Attention.w_q.weight.data = q_proj_weight
@@ -217,7 +217,7 @@ def run_multihead_self_attention_with_rope(
     device = in_features.device
     dtype = in_features.dtype
 
-    from cs336_basics.multihead_self_attention import MultiHeadSelfAttention
+    from cs336_basics.Chapter3.multihead_self_attention import MultiHeadSelfAttention
 
     Attention = MultiHeadSelfAttention(d_model, num_heads, max_seq_len, True, theta)
     Attention.w_q.weight.data = q_proj_weight
@@ -248,7 +248,7 @@ def run_rope(
         Float[Tensor, " ... sequence_length d_k"]: Tensor with RoPEd input.
     """
 
-    from cs336_basics.rope import rope
+    from cs336_basics.Chapter3.rope import rope
     
     RoPE = rope(theta, d_k, max_seq_len)
     return RoPE(in_query_or_key, token_positions)
@@ -328,7 +328,7 @@ def run_transformer_block(
     device = in_features.device
     dtype = in_features.dtype
 
-    from cs336_basics.TransformerBlock import TransformerBlock
+    from cs336_basics.Chapter3.TransformerBlock import TransformerBlock
     block = TransformerBlock(
         d_model,
         num_heads,
@@ -434,8 +434,8 @@ def run_transformer_lm(
         next-word distribution for each token.
     """
 
-    from cs336_basics.TransformerBlock import TransformerBlock
-    from cs336_basics.TransformerLM import TransformerLM
+    from cs336_basics.Chapter3.TransformerBlock import TransformerBlock
+    from cs336_basics.Chapter3.TransformerLM import TransformerLM
 
     lm = TransformerLM(
         vocab_size,
@@ -490,7 +490,7 @@ def run_rmsnorm(
         RMSNorm of the `in_features`.
     """
 
-    from cs336_basics.RMSNorm import RMSNorm
+    from cs336_basics.Chapter3.RMSNorm import RMSNorm
 
     rmsnorm = RMSNorm(d_model, eps)
     rmsnorm.load_state_dict({"weight" : weights})
@@ -549,7 +549,7 @@ def run_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, "
         softmax normalizing the specified `dim`.
     """
 
-    from cs336_basics.softmax import SoftMax
+    from cs336_basics.Chapter3.softmax import SoftMax
     return SoftMax(in_features, dim)
 
 
@@ -562,13 +562,17 @@ def run_cross_entropy(
     Args:run_scaled_dot_product_attention
         inputs (Float[Tensor, "batch_size vocab_size"]): inputs[i][j] is the
             unnormalized logit of jth class for the ith example.
-        targets (Int[Tensor, "batch_size"]): Tensor of shape (batch_size,) with the index of the correct class.
+        targets (Int[Tensor, "batch_size"]): 
+            Tensor of shape (batch_size,) with the index of the correct class.
             Each value must be between 0 and `num_classes - 1`.
 
     Returns:
         Float[Tensor, ""]: The average cross-entropy loss across examples.
     """
-    raise NotImplementedError
+
+    from cs336_basics.Chapter4.cross_entropy import cropss_entropy
+
+    return cropss_entropy(inputs, targets)
 
 
 def run_gradient_clipping(parameters: Iterable[torch.nn.Parameter], max_l2_norm: float) -> None:
@@ -587,7 +591,10 @@ def get_adamw_cls() -> Any:
     """
     Returns a torch.optim.Optimizer that implements AdamW.
     """
-    raise NotImplementedError
+
+    from cs336_basics.Chapter4.AdamW import AdamW
+
+    return AdamW
 
 
 def run_get_lr_cosine_schedule(
