@@ -2,6 +2,10 @@ import json
 import regex as re
 from typing import Iterable, Iterator
 
+
+HEX_MERGES_HEADER = "# format: hex-v1"
+
+
 class Tokenizer:
     """Byte-pair encoding tokenizer compatible with the CS336 assignment tests."""
 
@@ -16,30 +20,65 @@ class Tokenizer:
         self.merge_rank = {pair: i for i, pair in enumerate(self.merges)}
 
 
+    @staticmethod
+    def _decode_legacy_token(token: str) -> bytes:
+        try:
+            return token.encode("latin-1")
+        except UnicodeEncodeError:
+            return token.encode("utf-8")
+
+    @classmethod
+    def _load_merges(cls, merges_filepath: str) -> list[tuple[bytes, bytes]]:
+        merges: list[tuple[bytes, bytes]] = []
+        with open(merges_filepath, "r", encoding="utf-8") as f:
+            first_line = f.readline()
+
+            if first_line.startswith(HEX_MERGES_HEADER):
+                for line in f:
+                    line = line.rstrip("\r\n")
+                    if not line:
+                        continue
+                    left_hex, right_hex = line.split("\t")
+                    merges.append((bytes.fromhex(left_hex), bytes.fromhex(right_hex)))
+                return merges
+
+            legacy_lines = [first_line] if first_line else []
+            legacy_lines.extend(f.readlines())
+
+        for line in legacy_lines:
+            line = line.rstrip("\r\n")
+            if not line:
+                continue
+
+            parts = line.rsplit(" ", 1)
+            if len(parts) != 2:
+                continue
+
+            left, right = parts
+            merges.append((cls._decode_legacy_token(left), cls._decode_legacy_token(right)))
+
+        return merges
+
     @classmethod
     def from_files(cls, vocab_filepath, merges_filepath, special_tokens=None):
         """Load a tokenizer from a JSON vocabulary and a text merges file."""
-        
-        # we need to load vocab.json to a dict of py
-        vocab = {}
-        with open(vocab_filepath, "rb") as f:
+        special_tokens = special_tokens or []
+        merges = cls._load_merges(merges_filepath)
+
+        with open(vocab_filepath, "r", encoding="utf-8") as f:
             row = json.load(f)
 
-            for k, v in row.items():
-                vocab[int(k)] = v.encode("utf-8")
-
-        # then we do the same to merges, but a list
-        merges = []
-        with open(merges_filepath, "rb") as f:
-            for line in f:
-                line = line.rstrip(b'\r\n')
-                pair = line.split(b" ")
-
-                if len(pair) == 2:
-                    merges.append((pair[0], pair[1]))
-        
-        # print(f'vocab type: {type(vocab)}')
-        # print(f'merges type: {type(merges)}')
+        if isinstance(row, dict) and row.get("format") == "hex-v1":
+            vocab = {int(k): bytes.fromhex(v) for k, v in row["vocab"].items()}
+        else:
+            # Legacy saved vocab files are not reversible for non-ASCII bytes.
+            # Rebuild the vocabulary deterministically from the base bytes,
+            # special tokens, and merge order instead of trusting the file bytes.
+            vocab = {i: bytes([i]) for i in range(256)}
+            for token in special_tokens:
+                vocab[len(vocab)] = token.encode("utf-8")
+            for left, right in merges:
+                vocab[len(vocab)] = left + right
 
         return cls(vocab, merges, special_tokens)
     

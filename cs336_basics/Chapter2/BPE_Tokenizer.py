@@ -11,6 +11,9 @@ from multiprocessing import Pool
 """Training utilities for a byte-level BPE tokenizer."""
 
 
+HEX_MERGES_HEADER = "# format: hex-v1"
+
+
 def find_chunk_boundaries(
     file: BinaryIO,
     desired_num_chunks: int,
@@ -242,20 +245,34 @@ def train_bpe(file, vocab_size, special_tokens):
     return vocab, merges
 
 
+def save_vocab(vocab: dict[int, bytes], vocab_path: str) -> None:
+    """Save vocab bytes losslessly as hex strings."""
+    payload = {
+        "format": "hex-v1",
+        "vocab": {str(k): token.hex() for k, token in vocab.items()},
+    }
+    with open(vocab_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+
+def save_merges(merges: list[tuple[bytes, bytes]], merges_path: str) -> None:
+    """Save merge pairs losslessly as tab-separated hex strings."""
+    with open(merges_path, "w", encoding="utf-8") as f:
+        f.write(f"{HEX_MERGES_HEADER}\n")
+        for left, right in merges:
+            f.write(f"{left.hex()}\t{right.hex()}\n")
+
+
 if __name__ == '__main__':
-    file = r"D:\DeepLearningProject\CS336\assignment1-basics\data\owt_train.txt"
+    file = r"D:\DeepLearningProject\CS336\assignment1-basics\data\TinyStoriesV2-GPT4-train.txt"
     special_tokens = []
     special_tokens.append("<|endoftext|>")
-    vocab, merges = train_bpe(file, 32000, special_tokens)
+    vocab, merges = train_bpe(file, 10000, special_tokens)
 
     # 1. save Vocab
-    Vocab = {k: v.decode("utf-8", errors = "replace") for k, v in vocab.items()}
-    with open("owt_vocab.json", "w", encoding="utf-8") as f:
-        json.dump(Vocab, f, indent=2, ensure_ascii=False)
+    save_vocab(vocab, "owt_vocab.json")
 
     # 2. save merges to txt
-    with open("owt_merges.txt", "w", encoding="utf-8") as f:
-        for p0, p1 in merges:
-            f.write(f"{p0.decode('utf-8', errors='replace')} {p1.decode('utf-8', errors='replace')}\n")
+    save_merges(merges, "owt_merges.txt")
 
     print("Save Done")

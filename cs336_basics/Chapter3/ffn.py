@@ -12,9 +12,9 @@ class FFN(nn.Module):
         hidden = int(8.0 / 3.0 * d_model)
         self.d_ff = mul * ((hidden + mul - 1) // mul)
 
-        self.w1 = Linear(self.d_ff, self.d_model)
-        self.w2 = Linear(self.d_model, self.d_ff)
-        self.w3 = Linear(self.d_ff, self.d_model)
+        self.w1 = Linear(self.d_model, self.d_ff)
+        self.w2 = Linear(self.d_ff, self.d_model)
+        self.w3 = Linear(self.d_model, self.d_ff)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # FFN(x) = W2( SiLU(xW1) ⊙ xW3 )

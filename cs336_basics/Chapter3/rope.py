@@ -46,6 +46,12 @@ class rope(nn.Module):
         cos = self.cos_cache[token_positions].to(x.dtype)
         sin = self.sin_cache[token_positions].to(x.dtype)
 
+        # Make cached angles broadcast across any extra attention-head dims
+        # while keeping the sequence dimension aligned with x[..., seq_len, d_k].
+        while cos.ndim < x.ndim:
+            cos = cos.unsqueeze(-3)
+            sin = sin.unsqueeze(-3)
+
         return (x * cos) + (self.rotate_half(x) * sin)
 
 
