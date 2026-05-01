@@ -17,6 +17,6 @@ def Gradient_cliping(
 
     if g > max_norm:
         scale = max_norm / (g + eps)
-        for p in grads:
-            p.data.mul_(scale)
+        for grad in grads:
+            grad.data.mul_(scale)
             # p.data = p.data * scale

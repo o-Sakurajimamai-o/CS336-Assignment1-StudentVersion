@@ -10,5 +10,5 @@ def cropss_entropy(
     exp = torch.exp(logits).sum(dim=-1, keepdim=True)
     logits = torch.gather(logits, dim=-1, index=targets.unsqueeze(-1))
 
-    loss = -logits.unsqueeze(-1) + torch.log(exp)
+    loss = -logits + torch.log(exp)
     return loss.mean()
